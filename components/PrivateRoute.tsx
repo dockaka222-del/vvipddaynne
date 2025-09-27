@@ -11,13 +11,13 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, role }) => {
   const { user } = useAuth();
 
   if (!user) {
-    // Nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
+    // Nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập.
     return <Navigate to="/dang-nhap" />;
   }
 
   if (role && user.role !== role) {
     // Nếu có yêu cầu về vai trò nhưng người dùng không đáp ứng,
-    // chuyển hướng về trang chủ
+    // chuyển hướng về trang chủ.
     return <Navigate to="/" />;
   }
 

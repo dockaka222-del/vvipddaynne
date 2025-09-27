@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
@@ -15,22 +14,43 @@ import UserManagementPage from './pages/admin/UserManagementPage';
 import CheckoutPage from './pages/CheckoutPage';
 import UserDashboardPage from './pages/UserDashboardPage';
 
-
 const GuidePage: React.FC = () => {
   useEffect(() => {
     document.title = 'Hướng Dẫn - Vipdayne.net';
-    document.querySelector('meta[name="description"]')?.setAttribute('content', 'Hướng dẫn chi tiết cách sử dụng và mua hàng trên Vipdayne.net, giúp bạn có trải nghiệm tốt nhất.');
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute(
+        'content',
+        'Hướng dẫn chi tiết cách sử dụng và mua hàng trên Vipdayne.net, giúp bạn có trải nghiệm tốt nhất.',
+      );
   }, []);
 
-  return <div className="p-8 text-center"><h1 className="text-3xl font-bold">Trang Hướng Dẫn</h1><p className="mt-4">Nội dung hướng dẫn sử dụng sẽ được cập nhật tại đây.</p></div>;
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-3xl font-bold">Trang Hướng Dẫn</h1>
+      <p className="mt-4">
+        Nội dung hướng dẫn sử dụng sẽ được cập nhật tại đây.
+      </p>
+    </div>
+  );
 };
 const ContactPage: React.FC = () => {
   useEffect(() => {
     document.title = 'Liên Hệ - Vipdayne.net';
-    document.querySelector('meta[name="description"]')?.setAttribute('content', 'Liên hệ với bộ phận hỗ trợ của Vipdayne.net để được giải đáp mọi thắc mắc và nhận được sự trợ giúp nhanh chóng.');
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute(
+        'content',
+        'Liên hệ với bộ phận hỗ trợ của Vipdayne.net để được giải đáp mọi thắc mắc và nhận được sự trợ giúp nhanh chóng.',
+      );
   }, []);
-  
-  return <div className="p-8 text-center"><h1 className="text-3xl font-bold">Trang Liên Hệ</h1><p className="mt-4">Thông tin liên hệ: support@vipdayne.net</p></div>;
+
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-3xl font-bold">Trang Liên Hệ</h1>
+      <p className="mt-4">Thông tin liên hệ: support@vipdayne.net</p>
+    </div>
+  );
 };
 
 function App() {
@@ -55,7 +75,7 @@ function App() {
                     </PrivateRoute>
                   }
                 />
-                 <Route
+                <Route
                   path="/tai-khoan"
                   element={
                     <PrivateRoute>
@@ -63,7 +83,7 @@ function App() {
                     </PrivateRoute>
                   }
                 />
-                
+
                 {/* Admin Dashboard Routes */}
                 <Route
                   path="/admin"
@@ -73,12 +93,15 @@ function App() {
                     </PrivateRoute>
                   }
                 >
-                  <Route index element={<AdminPage />} /> {/* Trang mặc định của admin */}
+                  <Route index element={<AdminPage />} />{' '}
+                  {/* Trang mặc định của admin */}
                   <Route path="san-pham" element={<AdminPage />} />
                   <Route path="nguoi-dung" element={<UserManagementPage />} />
-                  <Route path="ma-giam-gia" element={<CouponManagementPage />} />
+                  <Route
+                    path="ma-giam-gia"
+                    element={<CouponManagementPage />}
+                  />
                 </Route>
-
               </Routes>
             </main>
             <footer className="bg-gray-800 text-white p-4 text-center">

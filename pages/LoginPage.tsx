@@ -33,7 +33,10 @@ const LoginPage: React.FC = () => {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Hoặc{' '}
-            <Link to="/dang-ky" className="font-medium text-cosmic-orange hover:text-orange-500">
+            <Link
+              to="/dang-ky"
+              className="font-medium text-cosmic-orange hover:text-orange-500"
+            >
               tạo tài khoản mới
             </Link>
           </p>
@@ -41,7 +44,9 @@ const LoginPage: React.FC = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
-              <label htmlFor="email-address" className="sr-only">Địa chỉ email</label>
+              <label htmlFor="email-address" className="sr-only">
+                Địa chỉ email
+              </label>
               <input
                 id="email-address"
                 name="email"
@@ -55,7 +60,9 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Mật khẩu</label>
+              <label htmlFor="password" className="sr-only">
+                Mật khẩu
+              </label>
               <input
                 id="password"
                 name="password"

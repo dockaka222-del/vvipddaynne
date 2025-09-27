@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import Quill from 'quill';
 
@@ -11,25 +10,27 @@ const QuillEditor: React.FC<QuillEditorProps> = ({ value, onChange }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<Quill | null>(null);
 
+  // Khởi tạo Quill editor một lần duy nhất
   useEffect(() => {
     if (editorRef.current && !quillRef.current && typeof Quill !== 'undefined') {
       const quill = new Quill(editorRef.current, {
         theme: 'snow',
         modules: {
           toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            [{ 'font': [] }],
+            [{ header: [1, 2, 3, false] }],
+            [{ font: [] }],
             ['bold', 'italic', 'underline', 'strike'],
             ['blockquote', 'code-block'],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'align': [] }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ align: [] }],
             ['link', 'image', 'video'],
-            ['clean']
+            ['clean'],
           ],
         },
         placeholder: 'Soạn thảo nội dung sản phẩm ở đây...',
       });
-      
+
+      // Lắng nghe sự kiện thay đổi văn bản từ người dùng và cập nhật state của React
       quill.on('text-change', (delta, oldDelta, source) => {
         if (source === 'user') {
           onChange(quill.root.innerHTML);
@@ -40,12 +41,13 @@ const QuillEditor: React.FC<QuillEditorProps> = ({ value, onChange }) => {
     }
   }, [onChange]);
 
+  // Cập nhật nội dung của Quill từ state của React khi nó thay đổi từ bên ngoài
+  // (ví dụ: khi AI tạo mô tả hoặc reset form)
   useEffect(() => {
-    // Cập nhật nội dung của Quill từ state của React khi nó thay đổi từ bên ngoài (ví dụ: AI generate)
     if (quillRef.current && quillRef.current.root.innerHTML !== value) {
       const selection = quillRef.current.getSelection();
       quillRef.current.root.innerHTML = value;
-      // Khôi phục lại vị trí con trỏ nếu có
+      // Khôi phục lại vị trí con trỏ để không làm gián đoạn trải nghiệm người dùng
       if (selection) {
         setTimeout(() => quillRef.current?.setSelection(selection), 0);
       }

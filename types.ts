@@ -1,4 +1,3 @@
-
 export interface Product {
   id: number;
   name: string;
@@ -24,7 +23,6 @@ export interface Purchase {
   items: PurchasedItem[];
   appliedCoupon?: string;
 }
-
 
 export interface User {
   id: string;

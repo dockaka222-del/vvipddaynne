@@ -36,9 +36,12 @@ const RegisterPage: React.FC = () => {
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             Tạo tài khoản mới
           </h2>
-           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Đã có tài khoản?{' '}
-            <Link to="/dang-nhap" className="font-medium text-cosmic-orange hover:text-orange-500">
+            <Link
+              to="/dang-nhap"
+              className="font-medium text-cosmic-orange hover:text-orange-500"
+            >
               Đăng nhập ngay
             </Link>
           </p>
@@ -46,7 +49,9 @@ const RegisterPage: React.FC = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
-               <label htmlFor="username" className="sr-only">Tên người dùng</label>
+              <label htmlFor="username" className="sr-only">
+                Tên người dùng
+              </label>
               <input
                 id="username"
                 name="username"
@@ -58,8 +63,10 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-             <div>
-              <label htmlFor="email-address" className="sr-only">Địa chỉ email</label>
+            <div>
+              <label htmlFor="email-address" className="sr-only">
+                Địa chỉ email
+              </label>
               <input
                 id="email-address"
                 name="email"
@@ -73,7 +80,9 @@ const RegisterPage: React.FC = () => {
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Mật khẩu</label>
+              <label htmlFor="password" className="sr-only">
+                Mật khẩu
+              </label>
               <input
                 id="password"
                 name="password"
