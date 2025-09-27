@@ -1,50 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PricingCard from '../components/PricingCard';
 import type { Product } from '../types';
-
-const sampleProducts: Product[] = [
-  {
-    id: 1,
-    name: 'Gói Tài Khoản VIP 1 Tháng',
-    price: 99000,
-    features: [
-      'Truy cập không giới hạn',
-      'Hỗ trợ ưu tiên 24/7',
-      'Cập nhật tính năng sớm',
-      'Không quảng cáo',
-    ],
-    popular: true,
-    image: 'https://via.placeholder.com/150/FF7F50/FFFFFF?text=VIP+1M',
-  },
-  {
-    id: 2,
-    name: 'Gói Tài Khoản VIP 6 Tháng',
-    price: 499000,
-    features: [
-      'Tất cả quyền lợi Gói 1 Tháng',
-      'Tiết kiệm 15%',
-      'Ưu đãi độc quyền',
-      'Quà tặng kèm theo',
-    ],
-    popular: false,
-    image: 'https://via.placeholder.com/150/228B22/FFFFFF?text=VIP+6M',
-  },
-  {
-    id: 3,
-    name: 'Gói Doanh Nghiệp (1 Năm)',
-    price: 1999000,
-    features: [
-      'Tất cả quyền lợi Gói 6 Tháng',
-      'Hỗ trợ 5 người dùng',
-      'Báo cáo thống kê chi tiết',
-      'Tích hợp API',
-    ],
-    popular: false,
-    image: 'https://via.placeholder.com/150/4682B4/FFFFFF?text=Business',
-  },
-];
+import { getProductsAPI } from '../services/apiService';
 
 const HomePage: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     document.title = 'Trang Chủ - Vipdayne.net | Chợ Sản Phẩm Số';
     document
@@ -53,6 +16,22 @@ const HomePage: React.FC = () => {
         'content',
         'Nền tảng cung cấp sản phẩm số và tài khoản chất lượng cao, uy tín hàng đầu Việt Nam. Mua sắm an toàn, tiện lợi và nhanh chóng.',
       );
+
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await getProductsAPI();
+        setProducts(data);
+      } catch (err: any) {
+        setError('Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
   return (
@@ -70,11 +49,23 @@ const HomePage: React.FC = () => {
 
       <section className="py-12">
         <h2 className="text-3xl font-bold text-center mb-8">Bảng Giá Dịch Vụ</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sampleProducts.map((product) => (
-            <PricingCard key={product.id} product={product} />
-          ))}
-        </div>
+        {isLoading && (
+          <div className="text-center">
+            <p>Đang tải sản phẩm...</p>
+          </div>
+        )}
+        {error && (
+          <div className="text-center text-red-500 bg-red-100 dark:bg-red-900/50 p-4 rounded-md">
+            <p>{error}</p>
+          </div>
+        )}
+        {!isLoading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => (
+              <PricingCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

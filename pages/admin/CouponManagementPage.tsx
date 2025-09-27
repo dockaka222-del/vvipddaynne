@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Coupon } from '../../types';
+import { getCouponsAPI, addCouponAPI } from '../../services/apiService';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('vi-VN', {
@@ -19,59 +20,12 @@ const getStatus = (coupon: Coupon) => {
 };
 
 const CouponManagementPage: React.FC = () => {
-  const [coupons, setCoupons] = useState<Coupon[]>([
-    {
-      id: '1',
-      code: 'VIPDAYNE50K',
-      discountType: 'amount',
-      discountValue: 50000,
-      createdAt: '2024-05-20',
-      expiresAt: '2024-12-31',
-      maxUses: 100,
-      uses: 10,
-    },
-    {
-      id: '2',
-      code: 'SALE10PT',
-      discountType: 'percentage',
-      discountValue: 10,
-      createdAt: '2024-05-15',
-      expiresAt: '2025-01-15',
-      maxUses: null,
-      uses: 50,
-    },
-    {
-      id: '3',
-      code: 'EXPIRED20K',
-      discountType: 'amount',
-      discountValue: 20000,
-      createdAt: '2023-01-01',
-      expiresAt: '2024-01-01',
-      maxUses: 200,
-      uses: 150,
-    },
-    {
-      id: '4',
-      code: 'LIMIT10',
-      discountType: 'amount',
-      discountValue: 10000,
-      createdAt: '2024-05-01',
-      expiresAt: null,
-      maxUses: 10,
-      uses: 10,
-    },
-    {
-      id: '5',
-      code: 'NOEXPIRE',
-      discountType: 'percentage',
-      discountValue: 5,
-      createdAt: '2024-01-01',
-      expiresAt: null,
-      maxUses: null,
-      uses: 25,
-    },
-  ]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
 
+  // Form states
   const [newCouponCode, setNewCouponCode] = useState('');
   const [newDiscountType, setNewDiscountType] = useState<
     'amount' | 'percentage'
@@ -79,30 +33,58 @@ const CouponManagementPage: React.FC = () => {
   const [newDiscountValue, setNewDiscountValue] = useState<number | ''>('');
   const [newExpiresAt, setNewExpiresAt] = useState('');
   const [newMaxUses, setNewMaxUses] = useState<number | ''>('');
+  const [formError, setFormError] = useState('');
 
-  const handleAddCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCouponCode || !newDiscountValue) {
-      alert('Vui lòng điền Mã và Giá trị giảm giá!');
-      return;
-    }
-    const newCoupon: Coupon = {
-      id: Math.random().toString(36).substr(2, 9),
-      code: newCouponCode.toUpperCase(),
-      discountType: newDiscountType,
-      discountValue: newDiscountValue as number,
-      createdAt: new Date().toISOString().split('T')[0],
-      expiresAt: newExpiresAt || null,
-      maxUses: newMaxUses ? (newMaxUses as number) : null,
-      uses: 0,
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getCouponsAPI();
+        setCoupons(data);
+      } catch (err) {
+        setError('Không thể tải danh sách mã giảm giá.');
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setCoupons([newCoupon, ...coupons]);
-    // Reset form
+    fetchCoupons();
+  }, []);
+
+  const resetForm = () => {
     setNewCouponCode('');
     setNewDiscountType('amount');
     setNewDiscountValue('');
     setNewExpiresAt('');
     setNewMaxUses('');
+    setFormError('');
+  };
+
+  const handleAddCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+    if (!newCouponCode || !newDiscountValue) {
+      setFormError('Vui lòng điền Mã và Giá trị giảm giá!');
+      return;
+    }
+
+    const newCouponData = {
+      code: newCouponCode.toUpperCase(),
+      discountType: newDiscountType,
+      discountValue: newDiscountValue as number,
+      expiresAt: newExpiresAt || null,
+      maxUses: newMaxUses ? (newMaxUses as number) : null,
+    };
+
+    setIsAdding(true);
+    try {
+      const addedCoupon = await addCouponAPI(newCouponData);
+      setCoupons([addedCoupon, ...coupons]);
+      resetForm();
+    } catch (err: any) {
+      setFormError(err.message || 'Không thể thêm mã mới.');
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -201,71 +183,77 @@ const CouponManagementPage: React.FC = () => {
               />
             </div>
           </div>
+          {formError && <p className="text-sm text-red-500">{formError}</p>}
           <div className="text-right">
             <button
               type="submit"
-              className="w-full md:w-auto bg-cosmic-orange text-white font-bold py-2 px-6 rounded-md hover:bg-orange-600 transition duration-300"
+              disabled={isAdding}
+              className="w-full md:w-auto bg-cosmic-orange text-white font-bold py-2 px-6 rounded-md hover:bg-orange-600 transition duration-300 disabled:opacity-50"
             >
-              Thêm Mã
+              {isAdding ? 'Đang thêm...' : 'Thêm Mã'}
             </button>
           </div>
         </form>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow">
-          <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700">
-              <th className="text-left p-4 font-semibold">Mã</th>
-              <th className="text-left p-4 font-semibold">Mức giảm</th>
-              <th className="text-left p-4 font-semibold">Đã dùng</th>
-              <th className="text-left p-4 font-semibold">Hết hạn</th>
-              <th className="text-left p-4 font-semibold">Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coupons.map((coupon) => {
-              const status = getStatus(coupon);
-              return (
-                <tr
-                  key={coupon.id}
-                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                >
-                  <td className="p-4 font-mono text-cosmic-orange">
-                    {coupon.code}
-                  </td>
-                  <td className="p-4 font-semibold">
-                    {coupon.discountType === 'amount'
-                      ? formatCurrency(coupon.discountValue)
-                      : `${coupon.discountValue}%`}
-                  </td>
-                  <td className="p-4">
-                    {coupon.uses} / {coupon.maxUses ?? '∞'}
-                  </td>
-                  <td className="p-4">
-                    {coupon.expiresAt
-                      ? new Date(coupon.expiresAt).toLocaleDateString('vi-VN')
-                      : 'Không có'}
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        status.color === 'green'
-                          ? 'bg-green-100 text-green-800'
-                          : status.color === 'yellow'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {status.text}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      {isLoading && <p>Đang tải danh sách mã...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+      {!isLoading && !error && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left p-4 font-semibold">Mã</th>
+                <th className="text-left p-4 font-semibold">Mức giảm</th>
+                <th className="text-left p-4 font-semibold">Đã dùng</th>
+                <th className="text-left p-4 font-semibold">Hết hạn</th>
+                <th className="text-left p-4 font-semibold">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coupons.map((coupon) => {
+                const status = getStatus(coupon);
+                return (
+                  <tr
+                    key={coupon.id}
+                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  >
+                    <td className="p-4 font-mono text-cosmic-orange">
+                      {coupon.code}
+                    </td>
+                    <td className="p-4 font-semibold">
+                      {coupon.discountType === 'amount'
+                        ? formatCurrency(coupon.discountValue)
+                        : `${coupon.discountValue}%`}
+                    </td>
+                    <td className="p-4">
+                      {coupon.uses} / {coupon.maxUses ?? '∞'}
+                    </td>
+                    <td className="p-4">
+                      {coupon.expiresAt
+                        ? new Date(coupon.expiresAt).toLocaleDateString('vi-VN')
+                        : 'Không có'}
+                    </td>
+                    <td className="p-4">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          status.color === 'green'
+                            ? 'bg-green-100 text-green-800'
+                            : status.color === 'yellow'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {status.text}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

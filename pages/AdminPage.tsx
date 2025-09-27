@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { generateProductDescription } from '../services/geminiService';
+import { generateProductDescriptionAPI } from '../services/geminiService';
+import { saveProductAPI } from '../services/apiService';
 import QuillEditor from '../components/QuillEditor';
 
 const AdminPage: React.FC = () => {
@@ -12,7 +13,8 @@ const AdminPage: React.FC = () => {
   const [productDescription, setProductDescription] = useState('');
 
   // States for UI control
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -22,20 +24,24 @@ const AdminPage: React.FC = () => {
       return;
     }
     setError('');
-    setIsLoading(true);
+    setIsGenerating(true);
     setProductDescription('');
 
     try {
-      const description = await generateProductDescription(
+      const result = await generateProductDescriptionAPI(
         productName,
         productFeatures,
       );
-      setProductDescription(description.replace(/\n/g, '<p><br/></p>'));
+      if (result.success && result.description) {
+        setProductDescription(result.description.replace(/\n/g, '<p><br/></p>'));
+      } else {
+        setError(result.message || 'Lỗi không xác định từ API.');
+      }
     } catch (err) {
       setError('Đã xảy ra lỗi khi tạo mô tả. Vui lòng thử lại.');
       console.error(err);
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
@@ -48,7 +54,7 @@ const AdminPage: React.FC = () => {
     setProductDescription('');
   };
 
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
@@ -58,7 +64,7 @@ const AdminPage: React.FC = () => {
       return;
     }
 
-    const newProduct = {
+    const newProductData = {
       name: productName,
       price: productPrice,
       imageUrl: productImageUrl,
@@ -67,18 +73,22 @@ const AdminPage: React.FC = () => {
       description: productDescription,
     };
 
-    // --- Mô phỏng gửi dữ liệu đến backend ---
-    console.log(
-      'Dữ liệu sản phẩm sẽ được gửi đến backend:',
-      JSON.stringify(newProduct, null, 2),
-    );
-
-    // Hiển thị thông báo thành công và reset form
-    setSuccessMessage(`Sản phẩm "${productName}" đã được lưu thành công!`);
-    resetForm();
-
-    // Tự động ẩn thông báo sau 3 giây
-    setTimeout(() => setSuccessMessage(''), 3000);
+    setIsSaving(true);
+    try {
+      const result = await saveProductAPI(newProductData);
+      if (result.success) {
+        setSuccessMessage(`Sản phẩm "${productName}" đã được lưu thành công!`);
+        resetForm();
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } else {
+        setError(result.message || 'Không thể lưu sản phẩm.');
+      }
+    } catch (err) {
+      setError('Lỗi kết nối đến server. Vui lòng thử lại.');
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -186,12 +196,12 @@ const AdminPage: React.FC = () => {
         {/* AI Description Generator */}
         <div className="text-center">
           <button
-            type="button" // Important: change type to not submit the form
+            type="button"
             onClick={handleGenerateDescription}
-            disabled={isLoading}
+            disabled={isGenerating}
             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-cosmic-orange to-orange-500 hover:from-orange-500 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
+            {isGenerating ? (
               <>
                 <svg
                   className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -263,9 +273,10 @@ const AdminPage: React.FC = () => {
         <div className="border-t pt-6 text-right">
           <button
             type="submit"
-            className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-leaf-green hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            disabled={isSaving}
+            className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-leaf-green hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Lưu Sản Phẩm
+            {isSaving ? 'Đang lưu...' : 'Lưu Sản Phẩm'}
           </button>
         </div>
       </form>
